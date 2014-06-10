@@ -33,6 +33,5 @@ Decrypt `mail_pem` secret from `secrets` data bag using node's private key:
 
 ```ruby
 include_recipe "littlecrypt"
-
 LittleCrypt::Item.load("secrets", "mail_pem")
 ```
