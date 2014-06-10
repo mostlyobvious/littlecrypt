@@ -1,37 +1,51 @@
-LittleCrypt
-===========
+# littlecrypt-cookbook
 
-Think of it as chef-vault for littlechef.
+TODO: Enter the cookbook description here.
 
+## Supported Platforms
 
-Standalone Usage
-----------------
+TODO: List your supported platforms.
 
-Encrypt `mail_pem` secret in `secrets` data bag using kitchen's and node public keys:
+## Attributes
 
+<table>
+  <tr>
+    <th>Key</th>
+    <th>Type</th>
+    <th>Description</th>
+    <th>Default</th>
+  </tr>
+  <tr>
+    <td><tt>['littlecrypt']['bacon']</tt></td>
+    <td>Boolean</td>
+    <td>whether to include bacon</td>
+    <td><tt>true</tt></td>
+  </tr>
+</table>
+
+## Usage
+
+### littlecrypt::default
+
+Include `littlecrypt` in your node's `run_list`:
+
+```json
+{
+  "run_list": [
+    "recipe[littlecrypt::default]"
+  ]
+}
 ```
-littlecrypt create -b secrets -n mail_pem --nodes dummy,foobar --secret "secret data"
-```
 
-Or you can just point to secret from file:
+## Contributing
 
-```
-littlecrypt create -b secrets -n mail_pem --nodes dummy,foobar --secret-file mail.pem
-```
+1. Fork the repository on Github
+2. Create a named feature branch (i.e. `add-new-recipe`)
+3. Write you change
+4. Write tests for your change (if applicable)
+5. Run the tests, ensuring they all pass
+6. Submit a Pull Request
 
-Show decrypted secret using kitchen's private key:
+## License and Authors
 
-```
-littlecrypt show -b secrets -n mail_pem
-```
-
-
-Usage in recipes
-----------------
-
-Decrypt `mail_pem` secret from `secrets` data bag using node's private key:
-
-```ruby
-include_recipe "littlecrypt"
-LittleCrypt::Item.load("secrets", "mail_pem")
-```
+Author:: YOUR_NAME (<YOUR_EMAIL>)
