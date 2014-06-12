@@ -1,0 +1,98 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'ostruct'
+
+
+module Commands
+  class Command
+    RequiredOption = Class.new(StandardError)
+
+    def initialize
+      @parser    = OptionParser.new
+      @arguments = OpenStruct.new
+    end
+
+    def parse
+      parser.order!
+      raise RequiredOption unless validate
+      [arguments, ARGV.shift]
+    rescue OptionParser::MissingArgument, RequiredOption
+      puts parser
+    end
+
+    def to_s
+      parser.to_s
+    end
+
+    private
+
+    def validate
+      true
+    end
+
+    attr_reader :parser, :arguments
+  end
+
+  class Main < Command
+    def parser
+      OptionParser.new do |opts|
+        opts.banner = "Usage: #{File.basename($0)} [-h|--help] <command> [<args>]"
+
+        opts.separator ""
+        opts.separator <<COMMANDS
+Available commands:
+    dump        Encrypt and store secret with public keys of interested parties
+    load        Decrypt and show secret using kitchen's private key
+
+See '#{File.basename($0)} <command> --help' for more information on a specific command.
+COMMANDS
+      end
+    end
+  end
+
+  class Dump < Command
+    def parser
+      OptionParser.new do |opts|
+        opts.on("-b DATA_BAG",          "Data bag where secret will be stored")      { |v| arguments.data_bag    = v }
+        opts.on("-k KEY",               "Secret identifier in data bag")             { |v| arguments.secret_name = v }
+        opts.on("--nodes x,y,z", Array, "List of nodes permitted to decrypt secret") { |v| arguments.nodes       = v }
+        opts.on("--secret DATA",        "Secret to be encrypted")                    { |v| arguments.secret_data = v }
+        opts.on("--secret-file FILE",   "File with secret to be encrypted")          { |v| arguments.secret_file = v }
+
+        opts.on_tail("-h", "--help", "Show this help") { puts opts }
+      end
+    end
+
+    def validate
+      arguments.secret_name && arguments.data_bag
+    end
+  end
+
+  class Load < Command
+    def parser
+      OptionParser.new do |opts|
+        opts.on("-b DATA_BAG", "Data bag where secret is stored") { |v| arguments.data_bag    = v }
+        opts.on("-k KEY",      "Secret identifier in data bag")   { |v| arguments.secret_name = v }
+
+        opts.on_tail("-h", "--help", "Show this help") { puts opts }
+      end
+    end
+
+    def validate
+      arguments.secret_name && arguments.data_bag && (arguments.secret_data || arguments.secret_file)
+    end
+  end
+end
+
+main       = Commands::Main.new
+_, command = main.parse
+
+case command
+when 'dump'
+  Commands::Dump.new.parse
+when 'load'
+  Commands::Load.new.parse
+else
+  puts main
+end
