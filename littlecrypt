@@ -2,6 +2,7 @@
 
 require 'optparse'
 require 'ostruct'
+require './libraries/littlecrypt'
 
 
 module Commands
@@ -87,12 +88,18 @@ end
 
 main       = Commands::Main.new
 _, command = main.parse
+root_path  = File.dirname(File.expand_path(__FILE__))
 
 case command
 when 'dump'
-  Commands::Dump.new.parse
+  arguments, _ = Commands::Dump.new.parse
+  service      = LittleCrypt::EncryptSecretForNodes.new(root_path)
+  secret       = arguments.secret_data || File.read(arguments.secret_file)
+  service.(arguments.data, arguments.secret_name, arguments.nodes, secret)
 when 'load'
-  Commands::Load.new.parse
+  arguments, _ = Commands::Load.new.parse
+  service      = LittleCrypt::DecryptSecretForKitchen.new(root_path)
+  service.(arguments.data_bag, arguments.secret_name)
 else
   puts main
 end
